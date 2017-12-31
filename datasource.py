@@ -39,14 +39,17 @@ class EcusisSource:
         payload = {'pageWidth' : '1200'}
         r = self.session.post(self.timetable_url, data = payload, headers = self.headers)
 
+        f = open('output/out0.html', 'w')
+        f.write("".join(map(chr, r.content)))
+        f.close()
+
         # construct the next post request using the viewstate etc from that page
         soup = BeautifulSoup(r.content, 'html.parser')
         payload = {}
         for key in self.formKeys:
             payload[key] = self.__getvalue(key, soup)
 
-        r = self.session.post(self.timetable_url, data = payload)
-
+        '''
         payload['__EVENTARGUMENT'] = 'calendar'
         payload['__EVENTTARGET'] = '6583'
         payload['selRecurInterval'] = 'Weekly'
@@ -55,6 +58,16 @@ class EcusisSource:
         payload['listMonth'] = 'January'
         payload['listYear'] = '2018'
         payload['weekDate'] = '01 Jan 2018'
+        '''
 
-        r = self.session.post(self.timetable_url, data = payload)
+        payload['__EVENTARGUMENT'] = '6591'
+        payload['__EVENTTARGET'] = 'calendar'
+        payload['selRecurInterval'] = 'Weekly'
+        payload['listToMonth'] = 'Jan'
+        payload['listToYear'] = '2018'
+        payload['listMonth'] = 'January'
+        payload['listYear'] = '2018'
+        payload['weekDate'] = '15 Jan 2018'
+
+        r = self.session.post(self.timetable_url, data = payload, headers = self.headers)
         return "".join(map(chr, r.content))
