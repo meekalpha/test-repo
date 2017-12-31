@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 class EcusisSource:
     login_url = 'https://ecusis.ecu.edu.au/ECU/login_secure.aspx'
     timetable_url = 'https://ecusis.ecu.edu.au/roomBookings/timetable.aspx?loc_code=200012227'
-    headers = { "user-agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36" }
+    headers = { "User-Agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36" }
     formKeys = [ 'fromInterval', 'toInterval', 'userName', 'weekDate', '__EVENTTARGET',
         '__EVENTARGUMENT', '__LASTFOCUS', '__VIEWSTATE', '__VIEWSTATEGENERATOR',
         '__EVENTVALIDATION', 'pageWidth', 'txtMeetingTitle', 'selRecurInterval',
@@ -45,13 +45,16 @@ class EcusisSource:
         for key in self.formKeys:
             payload[key] = self.__getvalue(key, soup)
 
-        payload['__EVENTARGUMENT'] = 'listMonth'
+        r = self.session.post(self.timetable_url, data = payload)
+
+        payload['__EVENTARGUMENT'] = 'calendar'
+        payload['__EVENTTARGET'] = '6583'
         payload['selRecurInterval'] = 'Weekly'
         payload['listToMonth'] = 'Jan'
-        payload['listToYear'] = '2017'
-        payload['listMonth'] = 'July'
+        payload['listToYear'] = '2018'
+        payload['listMonth'] = 'January'
         payload['listYear'] = '2018'
-        payload['weekDate'] = '4 Dec 2017'
+        payload['weekDate'] = '01 Jan 2018'
 
         r = self.session.post(self.timetable_url, data = payload)
         return "".join(map(chr, r.content))
