@@ -1,0 +1,7 @@
+# Test output
+output/*
+!output/.gitkeep
+
+# Credentials
+credentials/*
+!credentials/.gitkeep

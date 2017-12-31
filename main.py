@@ -10,8 +10,11 @@ timetable_url = 'https://ecusis.ecu.edu.au/roomBookings/timetable.aspx?loc_code=
 session = requests.Session()
 
 
+f = open('credentials\password.txt', 'r')
+pw = f.readline()
+
 payload = {'txtUserName' : 'jrospond',
-            'txtPassword' : '',
+            'txtPassword' : pw,
             'btnLogin' : 'Login',
             '__VIEWSTATE' : '/wEPDwUJNzYxMTIyMTIwZBgBBR5fX0NvbnRyb2xzUmVxdWlyZVBvc3RCYWNrS2V5X18WAQUNY2hrUmVtZW1iZXJNZba2id2ChWAsS0mmMejEzXWOpThvq+sk82BQ79XoGjsZ',
             '__VIEWSTATEGENERATOR' : '4C3AC411',
@@ -39,7 +42,7 @@ r = session.post(timetable_url, data = payload)
 
 
 byte = r.content
-f = open('out.html','w')
+f = open('output/out.html','w')
 html_doc = "".join(map(chr, byte))
 f.write(html_doc)
 f.close()
@@ -109,7 +112,7 @@ print (r.request.body)
 #print (r.content)
 
 byte = r.content
-f = open('out2.html','w')
+f = open('output/out2.html','w')
 html_doc = "".join(map(chr, byte))
 f.write(html_doc)
 f.close()
