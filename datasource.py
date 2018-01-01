@@ -3,7 +3,8 @@ from bs4 import BeautifulSoup
 class EcusisSource:
     login_url = 'https://ecusis.ecu.edu.au/ECU/login_secure.aspx'
     timetable_url = 'https://ecusis.ecu.edu.au/roomBookings/timetable.aspx?loc_code=200012227'
-    headers = { "user-agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36" }
+    headers = { "User-Agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36" }
+    # we should in future remove uneccesary keys from formKeys, such as weekDate
     formKeys = [ 'fromInterval', 'toInterval', 'userName', 'weekDate', '__EVENTTARGET',
         '__EVENTARGUMENT', '__LASTFOCUS', '__VIEWSTATE', '__VIEWSTATEGENERATOR',
         '__EVENTVALIDATION', 'pageWidth', 'txtMeetingTitle', 'selRecurInterval',
@@ -45,13 +46,23 @@ class EcusisSource:
         for key in self.formKeys:
             payload[key] = self.__getvalue(key, soup)
 
-        payload['__EVENTARGUMENT'] = 'listMonth'
-        payload['selRecurInterval'] = 'Weekly'
-        payload['listToMonth'] = 'Jan'
-        payload['listToYear'] = '2017'
-        payload['listMonth'] = 'July'
-        payload['listYear'] = '2018'
-        payload['weekDate'] = '4 Dec 2017'
+        # the date is a integer stored as a string in __EVENTARGUMENT
+        # where 01 Jan 2000 = 0 (or 1, I'll do the maths later)
+        #
+        # The date must clickable on the calendar of the current date
+        # any date outside of the range of the calendar will 404
+        payload['__EVENTTARGET'] = 'calendar'
+        payload['__EVENTARGUMENT'] = '6610'
 
-        r = self.session.post(self.timetable_url, data = payload)
+        # these keys must be populated with valid values but do not need to match __EVENTARGUMENT
+        payload['selRecurInterval'] = 'Weekly'
+        payload['listToMonth'] = 'Mar'
+        payload['listToYear'] = '2019'
+        payload['listMonth'] = 'March'
+        payload['listYear'] = '2019'
+
+        # weekDate is uneccesary and can be empty
+        #payload['weekDate'] = ''
+
+        r = self.session.post(self.timetable_url, data = payload, headers = self.headers)
         return "".join(map(chr, r.content))
