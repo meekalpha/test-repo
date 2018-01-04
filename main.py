@@ -2,8 +2,9 @@
 
 import requests
 from datasource import EcusisSource
-source = EcusisSource(requests.Session())
 
-f = open('output/out.html', 'w')
-f.write(source.GetHtml())
-f.close()
+source = EcusisSource(requests.Session())
+time_slots = source.get_time_slots();
+
+for t in time_slots:
+    print(t)
