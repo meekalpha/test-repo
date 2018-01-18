@@ -9,6 +9,8 @@ name = "pypi"
 
 requests = "*"
 "beautifulsoup4" = "*"
+sqlalchemy = "*"
+flask-sqlalchemy = "*"
 
 
 [dev-packages]
