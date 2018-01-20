@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+import re
 
 class EcusisSource:
     login_url = 'https://ecusis.ecu.edu.au/ECU/login_secure.aspx'
@@ -35,10 +36,11 @@ class EcusisSource:
         return ''
 
     def GetHtml(self):
-        # initial request to page - we need to make this before we can make a request
-        # date, for some reason.
+        ######### initial request to page #########
+        # we need to make this before we can make a request date, for some reason.
         payload = {'pageWidth' : '1200'}
         r = self.session.post(self.timetable_url, data = payload, headers = self.headers)
+        print ('Initial request...', r.status_code)
 
         # construct the next post request using the viewstate etc from that page
         soup = BeautifulSoup(r.content, 'html.parser')
@@ -46,23 +48,61 @@ class EcusisSource:
         for key in self.formKeys:
             payload[key] = self.__getvalue(key, soup)
 
-        # the date is a integer stored as a string in __EVENTARGUMENT
-        # where 01 Jan 2000 = 0 (or 1, I'll do the maths later)
+        src = "".join(map(chr, r.content))
+        dates = re.findall(r"__doPostBack\('calendar','([0-9]+)'\)", src)
+        start_date = int(dates[0])
+        end_date = int(dates[-1])
+
+
+        # user input for desired date
+        user_date = 6609
+
+        if user_date > end_date:
+            ######### request to see next month's calendar #########
+            # select next month
+            payload['__EVENTTARGET'] = 'cmdNextMonth'
+            payload['__EVENTARGUMENT'] = ''
+            # these keys determine from which month you are moving from
+            # when you post cmdNextMonth or cmdPrevMonth
+            payload['listMonth'] = 'January'
+            payload['listYear'] = '2018'
+            # these keys must be populated with valid values but do not need to match the date
+            payload['selRecurInterval'] = 'Weekly'
+            payload['listToMonth'] = 'Mar'
+            payload['listToYear'] = '2019'
+            # weekDate is uneccesary and can be empty
+            #payload['weekDate'] = ''
+
+            r = self.session.post(self.timetable_url, data = payload, headers = self.headers)
+            print ('Next month........', r.status_code)
+
+            f = open('output/out0.html', 'w')
+            f.write("".join(map(chr, r.content)))
+            f.close()
+
+            ######### request to see specified date #########
+            # get new viewstate etc.
+            soup = BeautifulSoup(r.content, 'html.parser')
+            payload = {}
+            for key in self.formKeys:
+                payload[key] = self.__getvalue(key, soup)
+
+        # the date is an integer stored as a string in __EVENTARGUMENT
+        # where 01 Jan 2000 = 0
         #
         # The date must clickable on the calendar of the current date
         # any date outside of the range of the calendar will 404
         payload['__EVENTTARGET'] = 'calendar'
-        payload['__EVENTARGUMENT'] = '6610'
-
+        payload['__EVENTARGUMENT'] = str(user_date)
         # these keys must be populated with valid values but do not need to match __EVENTARGUMENT
         payload['selRecurInterval'] = 'Weekly'
         payload['listToMonth'] = 'Mar'
         payload['listToYear'] = '2019'
         payload['listMonth'] = 'March'
         payload['listYear'] = '2019'
-
         # weekDate is uneccesary and can be empty
         #payload['weekDate'] = ''
 
         r = self.session.post(self.timetable_url, data = payload, headers = self.headers)
+        print ('Specific date.....', r.status_code)
         return "".join(map(chr, r.content))
