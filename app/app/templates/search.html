@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block body %}
+<br>
+<form action="{{ url_for('room_search') }}" method="post">
+  <dt>Date:</dt>
+  <dd><input type="date" name="date">
+  <dt>Time:</dt>
+  <dd><input type="time" name="time"></dd>
+  <br>
+  <dt><input type="submit" value="Search"/></dt>
+</form>
+{% endblock %}

@@ -36,13 +36,19 @@ def add_or_update(timeslot):
         db_session.merge(existing)
     if not existing:
         db_session.add(timeslot)
-    db_session.commit()
 
 def remote_update_db(room_id):
     ecusis = get_ecusis()
     timeslots = ecusis.get_time_slots(room_id)
     for t in timeslots:
         add_or_update(t)
+    db_session.commit()
+
+@app.cli.command('initdb')
+def initdb_command():
+    """Initializes the database."""
+    prep_db()
+    print('Initialized the database.')
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
@@ -63,6 +69,13 @@ def show_timeslots():
     timeslots = TimeSlot.query.filter_by(room_id = room_id)
     rooms = ["200011123", "200011125", "200011130", "200011131", "200011133", "200011142", "200012210", "200012234"]
     return render_template('show_timeslots.html', rooms=rooms, timeslots=timeslots)
+
+@app.route('/search', methods=['GET', 'POST'])
+def room_search():
+    if request.method == 'POST':
+        info = request.form['date'] + " " + request.form['time']
+        return render_template('results.html', info=info)
+    return render_template('search.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
