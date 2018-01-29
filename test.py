@@ -1,10 +1,10 @@
-from ecusisUtils import ecusisUtils
+import ecusisUtils
 import datetime
 
 test = datetime.date(2018, 1, 1)
 today = datetime.date.today()
 
-u = ecusisUtils()
+u = ecusisUtils
 
 print("Test date:", u.dmy_to_ecusisdate(test))
 print("Last day of the calendar:", u.last_day_on_calendar(test))
