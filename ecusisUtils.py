@@ -1,7 +1,6 @@
 import datetime
 
 ecusis_epoch_ordinal = 730120
-today = datetime.date.today()
 
 # Converts datetime.date object to ECUSIS ordinal
 # Receives datetime.date and returns int
@@ -28,16 +27,17 @@ def last_day_on_calendar(input_date):
     first_day_calendar_ecusis = first_day_month_ecusis - ((first_day_month_ecusis - 2) % 7)
     # calculate last day shown on the calendar
     last_day_ecusis = first_day_calendar_ecusis + 41
-    # check if January 1 is a Monday (has one less week shown)
+    # check if input_date is a Monday (has one extra week shown from previous month)
     if first_day_month_ecusis % 7 == 2:
         last_day_ecusis -= 7
     return last_day_ecusis
 
 # Determines if the target date is clickable on the ECUSIS calendar
 # Receives datetime.date object and returns bool
-def is_target_on_calendar(target_date):
+### Breaks for dates in the past, but this should be prevented at user input
+def is_target_on_calendar(current_date, target_date):
     on_calendar = True
     target_date_ecusis = dmy_to_ecusisdate(target_date)
-    if target_date_ecusis > last_day_on_calendar(today):
+    if target_date_ecusis > last_day_on_calendar(current_date):
         on_calendar = False
     return on_calendar

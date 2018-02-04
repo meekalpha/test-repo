@@ -9,7 +9,7 @@ u = ecusisUtils
 print("Test date:", u.dmy_to_ecusisdate(test))
 print("Last day of the calendar:", u.last_day_on_calendar(test))
 print("Last day of the calendar (today):", u.last_day_on_calendar(today))
-print("In current calendar?:", u.is_target_on_calendar(test))
+print("In current calendar?:", u.is_target_on_calendar(today, test))
 
 test = [datetime.date.today(),
         datetime.date(2018, 1, 1),
@@ -41,4 +41,4 @@ for date in test:
 
 print('=== is_target_on_calendar ===')
 for date in test:
-    print(date, '-> ', u.is_target_on_calendar(date))
+    print(date, '-> ', u.is_target_on_calendar(today, date))
