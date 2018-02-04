@@ -1,3 +1,4 @@
+from ecusisParser import extract_time_slots
 from bs4 import BeautifulSoup
 import re
 
@@ -35,9 +36,15 @@ class EcusisSource:
             return result.get('value', '')
         return ''
 
+<<<<<<< HEAD
     def GetHtml(self):
         ######### initial request to page #########
         # we need to make this before we can make a request date, for some reason.
+=======
+    def get_time_slots(self):
+        # initial request to page - we need to make this before we can make a request
+        # date, for some reason.
+>>>>>>> 415dcc33e6c32a74e4160deb51c1a9eff44a929f
         payload = {'pageWidth' : '1200'}
         r = self.session.post(self.timetable_url, data = payload, headers = self.headers)
         print ('Initial request...', r.status_code)
@@ -104,5 +111,10 @@ class EcusisSource:
         #payload['weekDate'] = ''
 
         r = self.session.post(self.timetable_url, data = payload, headers = self.headers)
+<<<<<<< HEAD
         print ('Specific date.....', r.status_code)
         return "".join(map(chr, r.content))
+=======
+        html_str = "".join(map(chr, r.content))
+        return extract_time_slots(html_str)
+>>>>>>> 415dcc33e6c32a74e4160deb51c1a9eff44a929f
