@@ -1,8 +1,7 @@
 import datetime
-#import calendar
 
 ecusis_epoch_ordinal = 730120
-today = datetime.date.today()  ### should this be in __init__?
+today = datetime.date.today()
 
 # Converts datetime.date object to ECUSIS ordinal
 # Receives datetime.date and returns int
@@ -33,18 +32,6 @@ def last_day_on_calendar(input_date):
     if first_day_month_ecusis % 7 == 2:
         last_day_ecusis -= 7
     return last_day_ecusis
-
-'''
-##### Not working #####
-# Calculates the last date on ECUSIS calendar for a given date, returns ECUSIS ordinal
-# Receives datetime.date object and returns int
-def last_day_calendar_ecusis_old(self, input_date):
-    days_in_current_month = calendar.mdays[input_date.month]
-    lastd_month = input_date.replace(day=days_in_current_month)
-    lastd_month_ecusis = self.dmy_to_ecusisdate(lastd_month)
-    lastd_calendar_ecusis = lastd_month_ecusis + 8 - ((lastd_month_ecusis - 2) % 7)
-    return lastd_calendar_ecusis
-'''
 
 # Determines if the target date is clickable on the ECUSIS calendar
 # Receives datetime.date object and returns bool
