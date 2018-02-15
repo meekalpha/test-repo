@@ -18,7 +18,7 @@ def ecusisdate_to_dmy(input_date_ecusis):
 
 # Calculates the last date on ECUSIS calendar for a given date, returns ECUSIS ordinal
 # Receives datetime.date object and returns int
-def last_day_on_calendar(input_date):
+def calendar_range(input_date):
     # find first day of the current month
     first_day_month = input_date.replace(day=1)
     first_day_month_ecusis = dmy_to_ecusisdate(first_day_month)
@@ -26,18 +26,20 @@ def last_day_on_calendar(input_date):
     # Note: mod 7 == 2 for any given Monday
     first_day_calendar_ecusis = first_day_month_ecusis - ((first_day_month_ecusis - 2) % 7)
     # calculate last day shown on the calendar
-    last_day_ecusis = first_day_calendar_ecusis + 41
+    last_day_calendar_ecusis = first_day_calendar_ecusis + 41
     # check if input_date is a Monday (has one extra week shown from previous month)
     if first_day_month_ecusis % 7 == 2:
-        last_day_ecusis -= 7
-    return last_day_ecusis
+        last_day_calendar_ecusis -= 7
+        first_day_calendar_ecusis -= 7
+    return (first_day_month_ecusis, last_day_calendar_ecusis)
 
 # Determines if the target date is clickable on the ECUSIS calendar
 # Receives datetime.date object and returns bool
 ### Breaks for dates in the past, but this should be prevented at user input
 def is_target_on_calendar(current_date, target_date):
-    on_calendar = True
+    on_calendar = False
     target_date_ecusis = dmy_to_ecusisdate(target_date)
-    if target_date_ecusis > last_day_on_calendar(current_date):
-        on_calendar = False
+    (first_day, last_day) = calendar_range(current_date)
+    if first_day <= target_date_ecusis <= last_day:
+        on_calendar = True
     return on_calendar
