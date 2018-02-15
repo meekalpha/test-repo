@@ -17,7 +17,7 @@ def ecusisdate_to_dmy(input_date_ecusis):
     return input_date
 
 # Calculates the last date on ECUSIS calendar for a given date, returns ECUSIS ordinal
-# Receives datetime.date object and returns int
+# Receives datetime.date object and returns pair of ints (first day, last day)
 def calendar_range(input_date):
     # find first day of the current month
     first_day_month = input_date.replace(day=1)
@@ -35,7 +35,6 @@ def calendar_range(input_date):
 
 # Determines if the target date is clickable on the ECUSIS calendar
 # Receives datetime.date object and returns bool
-### Breaks for dates in the past, but this should be prevented at user input
 def is_target_on_calendar(current_date, target_date):
     on_calendar = False
     target_date_ecusis = dmy_to_ecusisdate(target_date)
