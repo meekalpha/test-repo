@@ -10,5 +10,5 @@ print('Target date:', testdate)
 
 
 source = EcusisSource(requests.Session())
-source.test_bed(testdate)
+source.get_rooms(testdate)
 print("Winner winner")
