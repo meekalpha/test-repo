@@ -42,3 +42,11 @@ def is_target_on_calendar(current_date, target_date):
     if first_day <= target_date_ecusis <= last_day:
         on_calendar = True
     return on_calendar
+
+def is_target_in_week(current_date, target_date):
+    in_week = False
+    current_iso = current_date.isocalendar()
+    target_iso = target_date.isocalendar()
+    if current_date.isocalendar()[1] == target_date.isocalendar()[1]:
+        in_week = True
+    return in_week
