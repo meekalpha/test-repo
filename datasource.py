@@ -49,9 +49,9 @@ class EcusisSource:
         '200012236' : ('1.236', 1, 1, 1, 0, 'Jazz Studio')
     }
 
-    rooms = {
-        '200011101' : ('1.101', 0, 0, 0, 1, 'Handa Studio (percussion)'),
-        '200011117' : ('1.117', 0, 0, 0, 0, 'Practice Room')}
+#    rooms = {
+#        '200011101' : ('1.101', 0, 0, 0, 1, 'Handa Studio (percussion)'),
+#        '200011117' : ('1.117', 0, 0, 0, 0, 'Practice Room')}
 
     def __login(self):
         f = open('credentials\password.txt', 'r')
@@ -90,27 +90,28 @@ class EcusisSource:
             payload[key] = self.__getvalue(key, soup)
         return payload
 
-    def get_rooms(self, target_date):
+    def __select_date(self, target_date):
         calendar_check = is_target_on_calendar(self.current_date, target_date)
-        print('>>>> Checking target date')
-        print('>> On current calendar? ...', calendar_check)
         week_check = is_target_in_week(self.current_date, target_date)
-        print('>> In current week? ...', week_check)
+
+        print('>> Checking target date')
+        print(' On current calendar? ...', calendar_check)
+        print(' In current week? ...', week_check)
 
         timetable_url = 'https://ecusis.ecu.edu.au/roomBookings/timetable.aspx?loc_code=200012227'
         payload = {'pageWidth' : '1200'}
 
         if calendar_check == False or week_check == False:
-            print('>> Date change required')
-            print('>> Initial request ... ', end = '', flush=True)
+            print(' Date change required')
+            print(' Initial request ... ', end = '', flush=True)
             r = self.session.post(timetable_url, data = payload, headers = self.headers)
             payload.update(self.__parse_viewstate(r))
             print('DONE')
         else:
-            print('>> Date change not required')
+            print(' Date change not required')
 
         if calendar_check == False:
-            print('>> Changing calendar to ', end = '', flush=True)
+            print(' Changing calendar to ', end = '', flush=True)
             payload['__EVENTTARGET'] = 'listMonth'
             payload['__EVENTARGUMENT'] = ''
             payload['listMonth'] = target_date.strftime("%B")
@@ -126,7 +127,7 @@ class EcusisSource:
             print('DONE')
 
         if week_check == False:
-            print('>> Changing week to ', end = '', flush=True)
+            print(' Changing week to ', end = '', flush=True)
             target_date_ecusis = dmy_to_ecusisdate(target_date)
             payload['__EVENTTARGET'] = 'calendar'
             payload['__EVENTARGUMENT'] = str(target_date_ecusis)
@@ -136,18 +137,30 @@ class EcusisSource:
             self.__write_to_file('change_week', r)
             print('DONE')
 
-        print('>> Date change successful \o/')
+        print(' Date change successful.\n')
 
-        print('>>>> Requesting timetables')
+    def __select_rooms(self):
+        # will in future construct a list/dict with all desired rooms
+        print('>> Selecting rooms')
+        selection = self.rooms
+        print('Selection complete.\n')
+        return selection
 
+    def get_rooms(self, target_date):
+        rooms = self.__select_rooms()
+        self.__select_date(target_date)
         payload = {'pageWidth' : '1200'}
 
-        for key in self.rooms.keys():
-            print('>> Requesting', self.rooms[key][0], '... ', end = '', flush=True)
+        print('>> Requesting timetables')
+
+        for key in rooms.keys():
+            print(' Requesting', rooms[key][0], '... ', end = '', flush=True)
             timetable_url = 'https://ecusis.ecu.edu.au/roomBookings/timetable.aspx?loc_code=%s'  % key
             r = self.session.post(timetable_url, data = payload, headers = self.headers)
             self.__write_to_file(key, r)
             print('DONE')
+
+        print(' Requests complete.\n')
 
     def get_time_slots(self):
         # initial request to page - we need to make this before we can make a request
