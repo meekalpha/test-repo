@@ -14,11 +14,45 @@ class EcusisSource:
     #    '__EVENTVALIDATION', 'pageWidth', 'txtMeetingTitle', 'selRecurInterval',
     #    'recurDailySpacing', 'recurWeeklySpacing', 'listToDate', 'listToMonth',
     #    'listToYear', 'listMonth', 'listYear']
+
     formKeys = ['__VIEWSTATE', '__VIEWSTATEGENERATOR', '__EVENTVALIDATION']
+
+    rooms = {
+        '200011101' : ('1.101', 0, 0, 0, 1, 'Handa Studio (percussion)'),
+        '200011117' : ('1.117', 0, 0, 0, 0, 'Practice Room'),
+        '200011119' : ('1.119', 0, 0, 0, 0, 'Practice Room (upright piano)'),
+        '200011123' : ('1.123', 0, 0, 0, 0, 'Practice Room'),
+        '200011124' : ('1.124', 0, 0, 0, 0, 'Practice Room (wood floor)'),
+        '200011125' : ('1.125', 0, 0, 0, 0, 'Practice Room (double)'),
+        '200011127' : ('1.127', 0, 0, 1, 1, 'Jazz Drum Room'),
+        '200011129' : ('1.129', 0, 0, 1, 1, 'Contemporary Drum Room'),
+        '200011130' : ('1.130', 0, 0, 0, 0, 'Practice Room'),
+        '200011131' : ('1.131', 0, 0, 0, 0, 'Practice Room (no piano)'),
+        '200011132' : ('1.132', 0, 0, 0, 0, 'Practice Room (wood floor)'),
+        '200011133' : ('1.133', 0, 0, 0, 0, 'Practice Room'),
+        '200011139' : ('1.139', 0, 0, 0, 0, 'Voice Room 2'),
+        '200011141' : ('1.141', 0, 0, 0, 0, 'Practice Room (no piano, no window)'),
+        '200011142' : ('1.142', 0, 0, 0, 0, 'Practice Room (no piano, no window)'),
+        '200011143' : ('1.143', 1, 1, 1, 0, 'Ensemble Room 6 (keyboard only)'),
+        '200011145' : ('1.145', 1, 1, 1, 0, 'Ensemble Room 7 (keyboard only)'),
+        '200012202' : ('1.202', 0, 0, 0, 0, 'Sound Control Room'),
+        '200012208' : ('1.208', 1, 1, 1, 0, 'Ensemble Studio 1'),
+        '200012209' : ('1.209', 1, 1, 1, 0, 'Ensemble Studio 2'),
+        '200012210' : ('1.210', 0, 0, 0, 0, 'Practice Room (no window)'),
+        '200012216' : ('1.216', 0, 0, 0, 0, 'Practice Room (piano)'),
+        '200012217' : ('1.217', 0, 0, 0, 0, 'Practice Room (piano, wood floor)'),
+        '200012218' : ('1.218', 0, 0, 0, 0, 'Practice Room (wood floor)'),
+        '200012219' : ('1.219', 1, 1, 1, 0, 'Ensemble Studio 5'),
+        '200012227' : ('1.227', 1, 1, 1, 0, 'Ensemble Studio 4'),
+        '200012228' : ('1.228', 0, 0, 0, 0, 'Movement Studio 1 (wood floor)'),
+        '200012234' : ('1.234', 0, 0, 0, 0, 'Practice Room (no piano, no window)'),
+        '200012236' : ('1.236', 1, 1, 1, 0, 'Jazz Studio')
+    }
 
     def __login(self):
         f = open('credentials\password.txt', 'r')
         pw = f.readline()
+        f.close()
         payload = {
             'txtUserName' : 'jrospond',
             'txtPassword' : pw,
@@ -34,177 +68,85 @@ class EcusisSource:
         self.__login()
 
     def __getvalue(self, input_form_element, soup):
+        value = ''
         result = soup.find('input', attrs={'name': input_form_element})
         if result:
-            return result.get('value', '')
-        return ''
+            value = result.get('value', '')
+        return value
 
-    def testclass(self):
-        payload = {'pageWidth' : '1200'}
-
-        timetable_url = 'https://ecusis.ecu.edu.au/roomBookings/timetable.aspx?loc_code=200012227'
-
-        r = self.session.post(timetable_url, data = payload, headers = self.headers)
-        f = open('output/out227.html', 'w')
-        f.write("".join(map(chr, r.content)))
+    def __write_to_file(self, filename, soup):
+        f = open('output/%s.html' % filename, 'w')
+        f.write("".join(map(chr, soup.content)))
         f.close()
-        # construct the next post request using the viewstate etc from that page
-        soup = BeautifulSoup(r.content, 'html.parser')
+
+    def __parse_viewstate(self, soup):
+        soup = BeautifulSoup(soup.content, 'html.parser')
         payload = {}
         for key in self.formKeys:
             payload[key] = self.__getvalue(key, soup)
+        return payload
 
-
-        payload['__EVENTTARGET'] = 'listMonth'
-        payload['__EVENTARGUMENT'] = ''
-        payload['listMonth'] = 'April'
-        payload['listYear'] = '2018'
-        # these keys must be populated with valid values but do not need to match __EVENTARGUMENT
-        payload['selRecurInterval'] = 'Weekly'
-        payload['listToMonth'] = 'Jan'
-        payload['listToYear'] = '2018'
-
-        r = self.session.post(timetable_url, data = payload, headers = self.headers)
-        f = open('output/out227_apr.html', 'w')
-        f.write("".join(map(chr, r.content)))
-        f.close()
-        # construct the next post request using the viewstate etc from that page
-        soup = BeautifulSoup(r.content, 'html.parser')
-        payload = {}
-        for key in self.formKeys:
-            payload[key] = self.__getvalue(key, soup)
-
-        payload['__EVENTTARGET'] = 'calendar'
-        payload['__EVENTARGUMENT'] = '6694'
-
-        r = self.session.post(timetable_url, data = payload, headers = self.headers)
-        f = open('output/out227_apr30.html', 'w')
-        f.write("".join(map(chr, r.content)))
-        f.close()
-
-        timetable_url = 'https://ecusis.ecu.edu.au/roomBookings/timetable.aspx?loc_code=200012208'
-        r = self.session.post(timetable_url, data = payload, headers = self.headers)
-        f = open('output/out208_apr30.html', 'w')
-        f.write("".join(map(chr, r.content)))
-        f.close()
-
-    #def __select_date(self, target_date):
     def testclass2(self, target_date):
         calendar_check = is_target_on_calendar(self.current_date, target_date)
-        print('>>>> Checking target date')
-        print('>> Calendar check -', calendar_check)
+        print('>>>> Checking target date?')
+        print('>> On current calendar? ...', calendar_check)
         week_check = is_target_in_week(self.current_date, target_date)
-        print('>> Week check -', week_check)
+        print('>> In current week? ...', week_check)
 
         timetable_url = 'https://ecusis.ecu.edu.au/roomBookings/timetable.aspx?loc_code=200012227'
         payload = {'pageWidth' : '1200'}
 
         if calendar_check == False or week_check == False:
             print('>> Date change required')
-            print('>> Initialising ...', end = '')
+            print('>> Initial request ...', end = '')
             r = self.session.post(timetable_url, data = payload, headers = self.headers)
-            soup = BeautifulSoup(r.content, 'html.parser')
-            payload = {}
-            for key in self.formKeys:
-                payload[key] = self.__getvalue(key, soup)
+            payload.update(self.__parse_viewstate(r))
             print('DONE')
+        else:
+            print('>> Date change not required')
 
         if calendar_check == False:
-            print('>> Changing calendar ...', end = '')
+            print('>> Changing calendar to ', end = '')
             payload['__EVENTTARGET'] = 'listMonth'
             payload['__EVENTARGUMENT'] = ''
             payload['listMonth'] = target_date.strftime("%B")
             payload['listYear'] = target_date.strftime("%Y")
-
             # these keys must be populated with valid values but do not need to match __EVENTARGUMENT
             payload['selRecurInterval'] = 'Weekly'
             payload['listToMonth'] = 'Jan'
             payload['listToYear'] = '2018'
-            print(payload['listMonth'], payload['listYear'], '...', end = '')
-
+            print(payload['listMonth'], payload['listYear'], '... ', end = '')
             r = self.session.post(timetable_url, data = payload, headers = self.headers)
-
-            # construct the next post request using the viewstate etc from that page
-            soup = BeautifulSoup(r.content, 'html.parser')
-            payload = {}
-            for key in self.formKeys:
-                payload[key] = self.__getvalue(key, soup)
-
-            f = open('output/out_month.html', 'w')
-            f.write("".join(map(chr, r.content)))
-            f.close()
-
+            payload.update(self.__parse_viewstate(r))
+            self.__write_to_file('change_cal', r)
             print('DONE')
 
         if week_check == False:
-            print('>> Changing week ...', end = '')
+            print('>> Changing week to ', end = '')
             target_date_ecusis = dmy_to_ecusisdate(target_date)
             payload['__EVENTTARGET'] = 'calendar'
             payload['__EVENTARGUMENT'] = str(target_date_ecusis)
-            print(payload['__EVENTARGUMENT'], '...', end = '')
-
+            print(payload['__EVENTARGUMENT'], '... ', end = '')
             r = self.session.post(timetable_url, data = payload, headers = self.headers)
-
-            # construct the next post request using the viewstate etc from that page
-            soup = BeautifulSoup(r.content, 'html.parser')
-            payload = {}
-            for key in self.formKeys:
-                payload[key] = self.__getvalue(key, soup)
-
-            f = open('output/out_week.html', 'w')
-            f.write("".join(map(chr, r.content)))
-            f.close()
-
+            payload.update(self.__parse_viewstate(r))
+            self.__write_to_file('change_week', r)
             print('DONE')
 
-        print('>> Check complete')
-
-    #def testclass2(self, target_date):
-
-        #self.__select_date(target_date)
+        print('>> Date change successful \o/')
 
         print('>>>> Requesting timetables')
-        payload['pageWidth'] = '1200'
 
-        print('>> Requesting 227 ...', end = '')
-        timetable_url = 'https://ecusis.ecu.edu.au/roomBookings/timetable.aspx?loc_code=200012227'
-        r = self.session.post(timetable_url, data = payload, headers = self.headers)
-        f = open('output/out227.html', 'w')
-        f.write("".join(map(chr, r.content)))
-        f.close()
-        print('DONE')
-
-        print('>> Requesting 208 ...', end = '')
-        timetable_url = 'https://ecusis.ecu.edu.au/roomBookings/timetable.aspx?loc_code=200012208'
-        r = self.session.post(timetable_url, data = payload, headers = self.headers)
-        f = open('output/out208.html', 'w')
-        f.write("".join(map(chr, r.content)))
-        f.close()
-        print('DONE')
-
-        print('>> Requesting 219 ...', end = '')
-        timetable_url = 'https://ecusis.ecu.edu.au/roomBookings/timetable.aspx?loc_code=200012219'
-        r = self.session.post(timetable_url, data = payload, headers = self.headers)
-        f = open('output/out219.html', 'w')
-        f.write("".join(map(chr, r.content)))
-        f.close()
-        print('DONE')
-
-        print('>> Requesting 236 ...', end = '')
-        timetable_url = 'https://ecusis.ecu.edu.au/roomBookings/timetable.aspx?loc_code=200012236'
-        r = self.session.post(timetable_url, data = payload, headers = self.headers)
-        f = open('output/out236.html', 'w')
-        f.write("".join(map(chr, r.content)))
-        f.close()
-        print('DONE')
-
-        print('>> Requesting 236 ...', end = '')
-        timetable_url = 'https://ecusis.ecu.edu.au/roomBookings/timetable.aspx?loc_code=200011123'
-        r = self.session.post(timetable_url, data = payload, headers = self.headers)
-        f = open('output/out123.html', 'w')
-        f.write("".join(map(chr, r.content)))
-        f.close()
-        print('DONE')
+        for key in self.rooms.keys():
+            print('>> Requesting', self.rooms[key][0], '... ', end = '')
+            timetable_url = 'https://ecusis.ecu.edu.au/roomBookings/timetable.aspx?loc_code=%s'  % key
+            r = self.session.post(timetable_url, data = payload, headers = self.headers)
+            self.__write_to_file(key, r)
+            '''
+            f = open('output/%s.html' % key, 'w')
+            f.write("".join(map(chr, r.content)))
+            f.close()
+            '''
+            print('DONE')
 
     def get_time_slots(self):
         # initial request to page - we need to make this before we can make a request

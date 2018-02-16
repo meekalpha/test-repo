@@ -11,7 +11,7 @@ from datasource import EcusisSource
 #    print(t)
 
 testdate = datetime.date.today()
-testdate = datetime.date(2018, 9, 9)
+#testdate = datetime.date(2018, 9, 1)
 print('Target date:', testdate)
 
 source = EcusisSource(requests.Session())
