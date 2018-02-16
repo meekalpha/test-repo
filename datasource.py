@@ -7,7 +7,7 @@ class EcusisSource:
     current_date = datetime.date.today()
     login_url = 'https://ecusis.ecu.edu.au/ECU/login_secure.aspx'
     timetable_url = 'https://ecusis.ecu.edu.au/roomBookings/timetable.aspx?loc_code=200012227'
-    headers = { "User-Agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36" }
+    headers = {"User-Agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36"}
     # we should in future remove uneccesary keys from formKeys, such as weekDate
     #formKeys = [ 'fromInterval', 'toInterval', 'userName', 'weekDate', '__EVENTTARGET',
     #    '__EVENTARGUMENT', '__LASTFOCUS', '__VIEWSTATE', '__VIEWSTATEGENERATOR',
@@ -49,6 +49,10 @@ class EcusisSource:
         '200012236' : ('1.236', 1, 1, 1, 0, 'Jazz Studio')
     }
 
+    rooms = {
+        '200011101' : ('1.101', 0, 0, 0, 1, 'Handa Studio (percussion)'),
+        '200011117' : ('1.117', 0, 0, 0, 0, 'Practice Room')}
+
     def __login(self):
         f = open('credentials\password.txt', 'r')
         pw = f.readline()
@@ -86,9 +90,9 @@ class EcusisSource:
             payload[key] = self.__getvalue(key, soup)
         return payload
 
-    def testclass2(self, target_date):
+    def get_rooms(self, target_date):
         calendar_check = is_target_on_calendar(self.current_date, target_date)
-        print('>>>> Checking target date?')
+        print('>>>> Checking target date')
         print('>> On current calendar? ...', calendar_check)
         week_check = is_target_in_week(self.current_date, target_date)
         print('>> In current week? ...', week_check)
@@ -98,7 +102,7 @@ class EcusisSource:
 
         if calendar_check == False or week_check == False:
             print('>> Date change required')
-            print('>> Initial request ...', end = '')
+            print('>> Initial request ... ', end = '', flush=True)
             r = self.session.post(timetable_url, data = payload, headers = self.headers)
             payload.update(self.__parse_viewstate(r))
             print('DONE')
@@ -106,7 +110,7 @@ class EcusisSource:
             print('>> Date change not required')
 
         if calendar_check == False:
-            print('>> Changing calendar to ', end = '')
+            print('>> Changing calendar to ', end = '', flush=True)
             payload['__EVENTTARGET'] = 'listMonth'
             payload['__EVENTARGUMENT'] = ''
             payload['listMonth'] = target_date.strftime("%B")
@@ -115,18 +119,18 @@ class EcusisSource:
             payload['selRecurInterval'] = 'Weekly'
             payload['listToMonth'] = 'Jan'
             payload['listToYear'] = '2018'
-            print(payload['listMonth'], payload['listYear'], '... ', end = '')
+            print(payload['listMonth'], payload['listYear'], '... ', end = '', flush=True)
             r = self.session.post(timetable_url, data = payload, headers = self.headers)
             payload.update(self.__parse_viewstate(r))
             self.__write_to_file('change_cal', r)
             print('DONE')
 
         if week_check == False:
-            print('>> Changing week to ', end = '')
+            print('>> Changing week to ', end = '', flush=True)
             target_date_ecusis = dmy_to_ecusisdate(target_date)
             payload['__EVENTTARGET'] = 'calendar'
             payload['__EVENTARGUMENT'] = str(target_date_ecusis)
-            print(payload['__EVENTARGUMENT'], '... ', end = '')
+            print(payload['__EVENTARGUMENT'], '... ', end = '', flush=True)
             r = self.session.post(timetable_url, data = payload, headers = self.headers)
             payload.update(self.__parse_viewstate(r))
             self.__write_to_file('change_week', r)
@@ -136,16 +140,13 @@ class EcusisSource:
 
         print('>>>> Requesting timetables')
 
+        payload = {'pageWidth' : '1200'}
+
         for key in self.rooms.keys():
-            print('>> Requesting', self.rooms[key][0], '... ', end = '')
+            print('>> Requesting', self.rooms[key][0], '... ', end = '', flush=True)
             timetable_url = 'https://ecusis.ecu.edu.au/roomBookings/timetable.aspx?loc_code=%s'  % key
             r = self.session.post(timetable_url, data = payload, headers = self.headers)
             self.__write_to_file(key, r)
-            '''
-            f = open('output/%s.html' % key, 'w')
-            f.write("".join(map(chr, r.content)))
-            f.close()
-            '''
             print('DONE')
 
     def get_time_slots(self):
