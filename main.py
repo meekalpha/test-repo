@@ -15,11 +15,20 @@ print('              ')
 print(' tiny elephant')
 print('     v0.1     \n')
 
-testdate = datetime.date.today()
+source = EcusisSource(requests.Session())
+
+#testdate = datetime.date.today()
 testdate = datetime.date(2018, 9, 1)
 print( 'Target date:', testdate, '\n')
+source.get_rooms(testdate)
+print("Winner winner")
 
+testdate = datetime.date(2018, 9, 20)
+print( 'Target date:', testdate, '\n')
+source.get_rooms(testdate)
+print("Winner winner")
 
-source = EcusisSource(requests.Session())
+testdate = datetime.date.today()
+print( 'Target date:', testdate, '\n')
 source.get_rooms(testdate)
 print("Winner winner")

@@ -49,9 +49,9 @@ class EcusisSource:
         '200012236' : ('1.236', 1, 1, 1, 0, 'Jazz Studio')
     }
 
-#    rooms = {
-#        '200011101' : ('1.101', 0, 0, 0, 1, 'Handa Studio (percussion)'),
-#        '200011117' : ('1.117', 0, 0, 0, 0, 'Practice Room')}
+    rooms = {
+        '200011101' : ('1.101', 0, 0, 0, 1, 'Handa Studio (percussion)'),
+        '200011117' : ('1.117', 0, 0, 0, 0, 'Practice Room')}
 
     def __login(self):
         f = open('credentials\password.txt', 'r')
@@ -137,11 +137,13 @@ class EcusisSource:
             self.__write_to_file('change_week', r)
             print('DONE')
 
+        self.current_date = target_date
+
         print(' Date change successful.\n')
 
     def __select_rooms(self):
-        # will in future construct a list/dict with all desired rooms
         print('>> Selecting rooms')
+        # will in future construct a list/dict with all desired rooms
         selection = self.rooms
         print('Selection complete.\n')
         return selection
@@ -153,11 +155,14 @@ class EcusisSource:
 
         print('>> Requesting timetables')
 
+        request_date = str(dmy_to_ecusisdate(self.current_date))
+
         for key in rooms.keys():
             print(' Requesting', rooms[key][0], '... ', end = '', flush=True)
             timetable_url = 'https://ecusis.ecu.edu.au/roomBookings/timetable.aspx?loc_code=%s'  % key
             r = self.session.post(timetable_url, data = payload, headers = self.headers)
-            self.__write_to_file(key, r)
+            filename = '_'.join([key, request_date])
+            self.__write_to_file(filename, r)
             print('DONE')
 
         print(' Requests complete.\n')
